@@ -1,0 +1,24 @@
+// contracts/test-token/TestToken.compact
+
+circuit TestToken {
+    // Public state - visible to everyone
+    public state {
+        total_supply: Field,
+        name: String,
+        symbol: String
+    }
+    
+    // Private balances
+    private balances: Map<Address, Field>
+    
+    function mint(to: Address, amount: Field) {
+        balances[to] += amount
+        total_supply += amount
+    }
+    
+    function transfer(to: Address, amount: Field) {
+        require(balances[msg.sender] >= amount)
+        balances[msg.sender] -= amount
+        balances[to] += amount
+    }
+}
