@@ -1,0 +1,147 @@
+// contracts/amm/AMM.compact
+pragma language_version >= 0.18.0;
+
+import CompactStandardLibrary;
+
+circuit AMM {
+    public state {
+        token_a: Either<ZswapCoinPublicKey, ContractAddress>,
+        token_b: Either<ZswapCoinPublicKey, ContractAddress>,
+        reserve_a: Uint<128>,
+        reserve_b: Uint<128>,
+        lp_token: Either<ZswapCoinPublicKey, ContractAddress>
+    }
+
+    constructor(
+        _token_a: Either<ZswapCoinPublicKey, ContractAddress>,
+        _token_b: Either<ZswapCoinPublicKey, ContractAddress>,
+        _lp_token: Either<ZswapCoinPublicKey, ContractAddress>
+    ) {
+        token_a = _token_a;
+        token_b = _token_b;
+        lp_token = _lp_token;
+        reserve_a = 0u128;
+        reserve_b = 0u128;
+    }
+
+    query get_k(): Uint<128> {
+        return reserve_a * reserve_b;
+    }
+
+    query get_reserves(): (Uint<128>, Uint<128>) {
+        return (reserve_a, reserve_b);
+    }
+
+    circuit swap(
+        caller: Either<ZswapCoinPublicKey, ContractAddress>,
+        @witness amount_in: Uint<128>,
+        @witness min_amount_out: Uint<128>,
+        is_a_to_b: Boolean
+    ): Uint<128> {
+        assert(amount_in > 0u128, "Insufficient input amount");
+        
+        let fee_numerator = 997u128;
+        let fee_denominator = 1000u128;
+        let amount_in_with_fee = amount_in * fee_numerator;
+        
+        let amount_out: Uint<128>;
+        
+        if (is_a_to_b) {
+            let numerator = amount_in_with_fee * reserve_b;
+            let denominator = (reserve_a * fee_denominator) + amount_in_with_fee;
+            amount_out = numerator / denominator;
+            
+            assert(amount_out >= min_amount_out, "Slippage too high");
+            assert(amount_out < reserve_b, "Insufficient liquidity");
+            
+            reserve_a = reserve_a + amount_in;
+            reserve_b = reserve_b - amount_out;
+        } else {
+            let numerator = amount_in_with_fee * reserve_a;
+            let denominator = (reserve_b * fee_denominator) + amount_in_with_fee;
+            amount_out = numerator / denominator;
+            
+            assert(amount_out >= min_amount_out, "Slippage too high");
+            assert(amount_out < reserve_a, "Insufficient liquidity");
+            
+            reserve_b = reserve_b + amount_in;
+            reserve_a = reserve_a - amount_out;
+        }
+        
+        return amount_out;
+    }
+
+    circuit add_liquidity(
+        caller: Either<ZswapCoinPublicKey, ContractAddress>,
+        @witness amount_a: Uint<128>,
+        @witness amount_b: Uint<128>,
+        @witness min_liquidity: Uint<128>
+    ): Uint<128> {
+        assert(amount_a > 0u128 && amount_b > 0u128, "Insufficient amounts");
+        
+        let liquidity: Uint<128>;
+        
+        if (reserve_a == 0u128 && reserve_b == 0u128) {
+            liquidity = sqrt(amount_a * amount_b);
+            assert(liquidity > min_liquidity, "Insufficient initial liquidity");
+        } else {
+            let liquidity_a = (amount_a * get_total_supply()) / reserve_a;
+            let liquidity_b = (amount_b * get_total_supply()) / reserve_b;
+            liquidity = min(liquidity_a, liquidity_b);
+            assert(liquidity >= min_liquidity, "Insufficient liquidity minted");
+        }
+        
+        reserve_a = reserve_a + amount_a;
+        reserve_b = reserve_b + amount_b;
+        
+        return liquidity;
+    }
+
+    circuit remove_liquidity(
+        caller: Either<ZswapCoinPublicKey, ContractAddress>,
+        @witness lp_amount: Uint<128>,
+        @witness min_amount_a: Uint<128>,
+        @witness min_amount_b: Uint<128>
+    ): (Uint<128>, Uint<128>) {
+        assert(lp_amount > 0u128, "Insufficient liquidity burned");
+        
+        let total_supply = get_total_supply();
+        let amount_a = (lp_amount * reserve_a) / total_supply;
+        let amount_b = (lp_amount * reserve_b) / total_supply;
+        
+        assert(amount_a >= min_amount_a, "Insufficient A amount");
+        assert(amount_b >= min_amount_b, "Insufficient B amount");
+        
+        reserve_a = reserve_a - amount_a;
+        reserve_b = reserve_b - amount_b;
+        
+        return (amount_a, amount_b);
+    }
+
+    function sqrt(x: Uint<128>): Uint<128> {
+        if (x == 0u128) {
+            return 0u128;
+        }
+        let z = x / 2u128 + 1u128;
+        let y = x;
+        let i = 0u8;
+        while (i < 10u8 && z < y) {
+            y = z;
+            z = (x / z + z) / 2u128;
+            i = i + 1u8;
+        }
+        return y;
+    }
+
+    function min(a: Uint<128>, b: Uint<128>): Uint<128> {
+        if (a < b) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    function get_total_supply(): Uint<128> {
+        return reserve_a + reserve_b;
+    }
+}
