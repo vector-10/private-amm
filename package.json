@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/vector-10/private-amm/issues"
   },
-  "homepage": "https://github.com/vector-10/private-amm#readme"
+  "homepage": "https://github.com/vector-10/private-amm#readme",
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.9.0"
+  }
 }

@@ -1,0 +1,33 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const witnesses_1 = require("./witnesses");
+const mockContext = {};
+async function testWitness() {
+    console.log('Testing computeDivision witness with scaling...\n');
+    const SCALE = 1000000000000000000n;
+    console.log('Test 1: Simple division with scale');
+    const result1 = await witnesses_1.witnesses.computeDivision(mockContext, 100n, 10n, SCALE);
+    console.log(`(100 * ${SCALE}) / 10 = ${result1}`);
+    console.log(`Unscaled result: ${result1 / SCALE}`);
+    console.log(`Verification: ${result1} * 10 / ${SCALE} = ${(result1 * 10n) / SCALE} (should be 100)\n`);
+    console.log('Test 2: Division with remainder (scaling preserves precision)');
+    const result2 = await witnesses_1.witnesses.computeDivision(mockContext, 100n, 7n, SCALE);
+    console.log(`(100 * ${SCALE}) / 7 = ${result2}`);
+    console.log(`Unscaled result: ${result2 / SCALE}`);
+    console.log(`Remainder preserved in scaled value\n`);
+    console.log('Test 3: AMM swap calculation');
+    const reserveB = 1000000000000n;
+    const amountIn = 1000n;
+    const reserveA = 500000000000n;
+    const product = amountIn * reserveB;
+    const sum = reserveA + amountIn;
+    const amountOut = await witnesses_1.witnesses.computeDivision(mockContext, product, sum, SCALE);
+    console.log(`Product: ${product}`);
+    console.log(`Sum: ${sum}`);
+    console.log(`Amount Out (scaled): ${amountOut}`);
+    console.log(`Amount Out (unscaled): ${amountOut / SCALE}`);
+    console.log(`Verification: ${amountOut} * ${sum} = ${amountOut * sum}`);
+    console.log(`Expected product * SCALE: ${product * SCALE}`);
+    console.log(`Match: ${amountOut * sum === product * SCALE}\n`);
+}
+testWitness().catch(console.error);

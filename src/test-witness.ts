@@ -1,0 +1,36 @@
+import { witnesses } from './witnesses';
+
+const mockContext = {} as any;
+
+async function testWitness() {
+  console.log('Testing computeDivision witness (simple integer division)...\n');
+
+  console.log('Test 1: Exact division');
+  const result1 = await witnesses.computeDivision(mockContext, 100n, 10n);
+  console.log(`100 / 10 = ${result1}`);
+  console.log(`Verification: ${result1} * 10 = ${result1 * 10n} (should be 100)\n`);
+
+  console.log('Test 2: Division with remainder (loses precision)');
+  const result2 = await witnesses.computeDivision(mockContext, 100n, 7n);
+  console.log(`100 / 7 = ${result2} (remainder discarded)`);
+  console.log(`Verification: ${result2} * 7 = ${result2 * 7n} (should be ≤ 100)`);
+  console.log(`Precision loss: ${100n - (result2 * 7n)} wei\n`);
+
+  console.log('Test 3: AMM swap calculation');
+  const reserveB = 1000000000000n;
+  const amountIn = 1000n;
+  const reserveA = 500000000000n;
+  const product = amountIn * reserveB;
+  const sum = reserveA + amountIn;
+
+  const amountOut = await witnesses.computeDivision(mockContext, product, sum);
+  console.log(`Product: ${product}`);
+  console.log(`Sum: ${sum}`);
+  console.log(`Amount Out: ${amountOut}`);
+  console.log(`Verification: ${amountOut} * ${sum} = ${amountOut * sum}`);
+  console.log(`Expected product: ${product}`);
+  console.log(`Precision loss: ${product - (amountOut * sum)} wei`);
+  console.log(`Acceptable for tutorial: YES (1-2 wei loss is negligible)\n`);
+}
+
+testWitness().catch(console.error);

@@ -36,14 +36,11 @@ export circuit swapAForB(amountIn: Uint<128>): Uint<128> {
     
     const amountOut = computeDivision(product, sum);
     
-    // Verification constraint
     assert((amountOut as Field) * sum == product, "Invalid swap calculation");
     
-    // Update reserves
     reserveA = disclose((reserveA + amountIn) as Uint<128>);
     reserveB = disclose((reserveB - amountOut) as Uint<128>);
     
-    // Disclose witness value before returning
     return disclose(amountOut);
 }
 
@@ -53,14 +50,11 @@ export circuit swapBForA(amountIn: Uint<128>): Uint<128> {
     
     const amountOut = computeDivision(product, sum);
     
-    // Verification constraint
     assert((amountOut as Field) * sum == product, "Invalid swap calculation");
     
-    // Update reserves
     reserveB = disclose((reserveB + amountIn) as Uint<128>);
     reserveA = disclose((reserveA - amountOut) as Uint<128>);
     
-    // Disclose witness value before returning
     return disclose(amountOut);
 }
 

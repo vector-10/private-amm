@@ -3,7 +3,8 @@ import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 export type Witnesses<T> = {
   computeDivision(context: __compactRuntime.WitnessContext<Ledger, T>,
                   numerator_0: bigint,
-                  denominator_0: bigint): [T, bigint];
+                  denominator_0: bigint,
+                  scale_0: bigint): [T, bigint];
 }
 
 export type ImpureCircuits<T> = {

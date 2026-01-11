@@ -142,14 +142,14 @@ class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.originalState != undefined && contextOrig_0.transactionContext != undefined)) {
           __compactRuntime.type_error('swapBForA',
                                       'argument 1 (as invoked from Typescript)',
-                                      'AMM.compact line 50 char 1',
+                                      'AMM.compact line 49 char 1',
                                       'CircuitContext',
                                       contextOrig_0)
         }
         if (!(typeof(amountIn_0) === 'bigint' && amountIn_0 >= 0n && amountIn_0 <= 340282366920938463463374607431768211455n)) {
           __compactRuntime.type_error('swapBForA',
                                       'argument 1 (argument 2 as invoked from Typescript)',
-                                      'AMM.compact line 50 char 1',
+                                      'AMM.compact line 49 char 1',
                                       'Uint<0..340282366920938463463374607431768211455>',
                                       amountIn_0)
         }
@@ -175,7 +175,7 @@ class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.originalState != undefined && contextOrig_0.transactionContext != undefined)) {
           __compactRuntime.type_error('getReserveA',
                                       'argument 1 (as invoked from Typescript)',
-                                      'AMM.compact line 67 char 1',
+                                      'AMM.compact line 65 char 1',
                                       'CircuitContext',
                                       contextOrig_0)
         }
@@ -198,7 +198,7 @@ class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.originalState != undefined && contextOrig_0.transactionContext != undefined)) {
           __compactRuntime.type_error('getReserveB',
                                       'argument 1 (as invoked from Typescript)',
-                                      'AMM.compact line 71 char 1',
+                                      'AMM.compact line 69 char 1',
                                       'CircuitContext',
                                       contextOrig_0)
         }
@@ -332,11 +332,17 @@ class Contract {
       currentZswapLocalState: context.currentZswapLocalState
     }
   }
-  _computeDivision_0(context, partialProofData, numerator_0, denominator_0) {
+  _computeDivision_0(context,
+                     partialProofData,
+                     numerator_0,
+                     denominator_0,
+                     scale_0)
+  {
     const witnessContext_0 = __compactRuntime.witnessContext(ledger(context.transactionContext.state), context.currentPrivateState, context.transactionContext.address);
     const [nextPrivateState_0, result_0] = this.witnesses.computeDivision(witnessContext_0,
                                                                           numerator_0,
-                                                                          denominator_0);
+                                                                          denominator_0,
+                                                                          scale_0);
     context.currentPrivateState = nextPrivateState_0;
     if (!(typeof(result_0) === 'bigint' && result_0 >= 0n && result_0 <= 340282366920938463463374607431768211455n)) {
       __compactRuntime.type_error('computeDivision',
@@ -448,6 +454,7 @@ class Contract {
     return liquidity_0;
   }
   _swapAForB_0(context, partialProofData, amountIn_0) {
+    const SCALE_0 = 1000000000000000000n;
     const product_0 = __compactRuntime.mulField(amountIn_0,
                                                 _descriptor_0.fromValue(Contract._query(context,
                                                                                         partialProofData,
@@ -463,7 +470,7 @@ class Contract {
                                                                                                     result: undefined } }]).value));
     const sum_0 = ((t1) => {
                     if (t1 > 340282366920938463463374607431768211455n) {
-                      throw new __compactRuntime.CompactError('AMM.compact line 35 char 17: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
+                      throw new __compactRuntime.CompactError('AMM.compact line 37 char 17: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
                     }
                     return t1;
                   })(_descriptor_0.fromValue(Contract._query(context,
@@ -483,7 +490,8 @@ class Contract {
     const amountOut_0 = this._computeDivision_0(context,
                                                 partialProofData,
                                                 product_0,
-                                                sum_0);
+                                                sum_0,
+                                                SCALE_0);
     __compactRuntime.assert(__compactRuntime.mulField(amountOut_0, sum_0)
                             ===
                             product_0,
@@ -546,6 +554,7 @@ class Contract {
     return amountOut_0;
   }
   _swapBForA_0(context, partialProofData, amountIn_0) {
+    const SCALE_0 = 1000000000000000000n;
     const product_0 = __compactRuntime.mulField(amountIn_0,
                                                 _descriptor_0.fromValue(Contract._query(context,
                                                                                         partialProofData,
@@ -561,7 +570,7 @@ class Contract {
                                                                                                     result: undefined } }]).value));
     const sum_0 = ((t1) => {
                     if (t1 > 340282366920938463463374607431768211455n) {
-                      throw new __compactRuntime.CompactError('AMM.compact line 52 char 17: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
+                      throw new __compactRuntime.CompactError('AMM.compact line 53 char 17: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
                     }
                     return t1;
                   })(_descriptor_0.fromValue(Contract._query(context,
@@ -581,14 +590,15 @@ class Contract {
     const amountOut_0 = this._computeDivision_0(context,
                                                 partialProofData,
                                                 product_0,
-                                                sum_0);
+                                                sum_0,
+                                                SCALE_0);
     __compactRuntime.assert(__compactRuntime.mulField(amountOut_0, sum_0)
                             ===
                             product_0,
                             'Invalid swap calculation');
     const tmp_0 = ((t1) => {
                     if (t1 > 340282366920938463463374607431768211455n) {
-                      throw new __compactRuntime.CompactError('AMM.compact line 60 char 25: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
+                      throw new __compactRuntime.CompactError('AMM.compact line 59 char 25: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 340282366920938463463374607431768211455');
                     }
                     return t1;
                   })(_descriptor_0.fromValue(Contract._query(context,
