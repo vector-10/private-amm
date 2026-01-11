@@ -1,0 +1,73 @@
+// AMM.compact
+pragma language_version >= 0.18.0;
+
+import CompactStandardLibrary;
+
+export ledger reserveA: Uint<128>;
+export ledger reserveB: Uint<128>;
+export ledger totalLiquidity: Uint<128>;
+
+witness computeDivision(numerator: Field, denominator: Uint<128>): Uint<128>;
+
+constructor() {
+    reserveA = disclose(0 as Uint<128>);
+    reserveB = disclose(0 as Uint<128>);
+    totalLiquidity = disclose(0 as Uint<128>);
+}
+
+export circuit addLiquidity(
+    amountA: Uint<128>,
+    amountB: Uint<128>
+): Uint<128> {
+    const newReserveA = (reserveA + amountA) as Uint<128>;
+    const newReserveB = (reserveB + amountB) as Uint<128>;
+    const liquidity = (amountA + amountB) as Uint<128>;
+    
+    reserveA = disclose(newReserveA);
+    reserveB = disclose(newReserveB);
+    totalLiquidity = disclose((totalLiquidity + liquidity) as Uint<128>);
+    
+    return liquidity;
+}
+
+export circuit swapAForB(amountIn: Uint<128>): Uint<128> {
+    const product = (amountIn as Field) * reserveB;
+    const sum = (reserveA + amountIn) as Uint<128>;
+    
+    const amountOut = computeDivision(product, sum);
+    
+    // Verification constraint
+    assert((amountOut as Field) * sum == product, "Invalid swap calculation");
+    
+    // Update reserves
+    reserveA = disclose((reserveA + amountIn) as Uint<128>);
+    reserveB = disclose((reserveB - amountOut) as Uint<128>);
+    
+    // Disclose witness value before returning
+    return disclose(amountOut);
+}
+
+export circuit swapBForA(amountIn: Uint<128>): Uint<128> {
+    const product = (amountIn as Field) * reserveA;
+    const sum = (reserveB + amountIn) as Uint<128>;
+    
+    const amountOut = computeDivision(product, sum);
+    
+    // Verification constraint
+    assert((amountOut as Field) * sum == product, "Invalid swap calculation");
+    
+    // Update reserves
+    reserveB = disclose((reserveB + amountIn) as Uint<128>);
+    reserveA = disclose((reserveA - amountOut) as Uint<128>);
+    
+    // Disclose witness value before returning
+    return disclose(amountOut);
+}
+
+export circuit getReserveA(): Uint<128> {
+    return reserveA;
+}
+
+export circuit getReserveB(): Uint<128> {
+    return reserveB;
+}

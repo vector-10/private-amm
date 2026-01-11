@@ -1,0 +1,47 @@
+// TestToken.compact
+pragma language_version >= 0.18.0;
+
+import CompactStandardLibrary;
+import "./compact-contracts/node_modules/@openzeppelin/compact-contracts/src/token/FungibleToken" prefix FT_;
+
+/**
+ * Simple test token for AMM testing
+ * Uses OpenZeppelin's FungibleToken implementation
+ */
+
+constructor(
+    name: Opaque<"string">,
+    symbol: Opaque<"string">,
+    decimals: Uint<8>,
+    initialSupply: Uint<128>,
+    recipient: Either<ZswapCoinPublicKey, ContractAddress>
+) {
+    // Initialize the fungible token
+    FT_initialize(name, symbol, decimals);
+    
+    // Mint initial supply to recipient
+    FT__mint(recipient, initialSupply);
+}
+
+// Transfer tokens
+export circuit transfer(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    value: Uint<128>
+): Boolean {
+    return FT_transfer(to, value);
+}
+
+// Get balance
+export circuit balanceOf(
+    owner: Either<ZswapCoinPublicKey, ContractAddress>
+): Uint<128> {
+    return FT_balanceOf(owner);
+}
+
+// Mint more tokens (for testing)
+export circuit mint(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+): [] {
+    FT__mint(to, amount);
+}

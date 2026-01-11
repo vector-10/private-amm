@@ -1,0 +1,22 @@
+{
+  "name": "private-amm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "compact compile contracts/TestToken.compact && compact compile contracts/LPToken.compact && compact compile contracts/AMM.compact",
+    "compile:fast": "compact compile --skip-zk contracts/TestToken.compact && compact compile --skip-zk contracts/LPToken.compact && compact compile --skip-zk contracts/AMM.compact"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vector-10/private-amm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vector-10/private-amm/issues"
+  },
+  "homepage": "https://github.com/vector-10/private-amm#readme"
+}

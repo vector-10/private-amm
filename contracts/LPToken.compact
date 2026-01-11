@@ -1,0 +1,51 @@
+// LPToken.compact
+pragma language_version >= 0.18.0;
+
+import CompactStandardLibrary;
+import "./compact-contracts/node_modules/@openzeppelin/compact-contracts/src/token/FungibleToken" prefix FT_;
+
+/**
+ * LP Token - represents liquidity provider shares in the AMM
+ * Uses OpenZeppelin's FungibleToken implementation
+ * Only the AMM contract should be able to mint/burn these
+ */
+
+constructor(
+    name: Opaque<"string">,
+    symbol: Opaque<"string">,
+    decimals: Uint<8>
+) {
+    FT_initialize(name, symbol, decimals);
+}
+
+// Transfer LP tokens
+export circuit transfer(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    value: Uint<128>
+): Boolean {
+    return FT_transfer(to, value);
+}
+
+// Get LP token balance
+export circuit balanceOf(
+    owner: Either<ZswapCoinPublicKey, ContractAddress>
+): Uint<128> {
+    return FT_balanceOf(owner);
+}
+
+// Mint LP tokens (should only be called by AMM)
+export circuit mint(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+): [] {
+    FT__mint(to, amount);
+}
+
+// Burn LP tokens (should only be called by AMM)
+export circuit burn(
+    from: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+): [] {
+    FT__burn(from, amount);
+}
+
